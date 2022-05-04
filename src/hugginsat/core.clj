@@ -62,5 +62,12 @@
 (def loop-backs (:loop-back-configs (edn/read-string (slurp "resources/config.edn"))))
 
 
-(def connection-report {:report (merge ping-state {:loop-back-state(zipmap (keys loop-backs) (map loop-back-test (vals loop-backs)))})})
+(defn -main [& args]
+  (let [addresses    (:addresses (edn/read-string (slurp "resources/config.edn")))
+        loop-backs   (:loop-back-configs (edn/read-string (slurp "resources/config.edn")))
+        ping-state   {:ping-state (check-addresses addresses)}]
+
+    (if (some false? (vals (:ping-state ping-state)))
+      ping-state
+      {:report (merge ping-state {:loop-back-state (zipmap (keys loop-backs) (map loop-back-test (vals loop-backs)))})})))
 
