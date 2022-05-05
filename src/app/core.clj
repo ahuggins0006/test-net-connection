@@ -1,4 +1,4 @@
-(ns hugginsat.tcp-tool
+(ns app.core
   (:require
    [gloss.io :as io]
    [gloss.core :as gloss]
@@ -12,10 +12,14 @@
   (:gen-class))
 
 ;;ping to make sure there is something to connect to
-(defn ping-something [something] (shell/sh "ping" "-c" "1" "-W" "3" something))
+(defn ping-something [something]
+  (case (.toLowerCase (System/getProperty "os.name"))
+    "linux"                     (#(if (= (second %) 0) true false) (first (shell/sh "ping" "-c" "1" "-W" "3" something)))
+    ("windows 10" "windows 11") (str/includes? (:out (shell/sh "cmd" "/C" "powershell.exe" "Test-Connection" something "-Quiet" "-Count" "1")) "True")))
 
+;; ping all addresses
 (defn check-addresses [addresses]
-  (let [p (mapv (comp #(if (= (second %) 0) true false) first ping-something) addresses)
+  (let [p (pmap ping-something addresses)
         k (mapv keyword addresses)]
     (zipmap k p)
   ))
@@ -62,9 +66,7 @@
         ping-state   {:ping-state (check-addresses addresses)}]
 
     (if (some false? (vals (:ping-state ping-state)))
-      ping-state
-      {:report (merge ping-state {:loop-back-state (zipmap (keys loop-backs) (map loop-back-test (vals loop-backs)))})})))
+      (println ping-state)
+      (println {:report (merge ping-state {:loop-back-state (zipmap (keys loop-backs) (map loop-back-test (vals loop-backs)))})})))
+  (System/exit 0))
 
-
-(-main "/data/fcs/projects/test-net-connection/resources/config.edn")
-(-main)
