@@ -7,22 +7,18 @@
    [manifold.stream :as s]
    [clojure.edn :as edn]
    [clojure.java.shell :as shell]
-   [clojure.string :as str]))
+   [clojure.test :refer [is]]
+   [clojure.string :as str])
+  (:gen-class))
 
 ;;ping to make sure there is something to connect to
 (defn ping-something [something] (shell/sh "ping" "-c" "1" "-W" "3" something))
-
-(def addresses (:addresses (edn/read-string (slurp "resources/config.edn"))))
 
 (defn check-addresses [addresses]
   (let [p (mapv (comp #(if (= (second %) 0) true false) first ping-something) addresses)
         k (mapv keyword addresses)]
     (zipmap k p)
   ))
-
-
-(def ping-state {:ping-state (check-addresses addresses)})
-
 
 ;; using aleph to create clients for loop-back testing
 
@@ -58,16 +54,17 @@
   )
 )
 
-;;test all loop-back configs and merge results
-(def loop-backs (:loop-back-configs (edn/read-string (slurp "resources/config.edn"))))
-
 
 (defn -main [& args]
-  (let [addresses    (:addresses (edn/read-string (slurp "resources/config.edn")))
-        loop-backs   (:loop-back-configs (edn/read-string (slurp "resources/config.edn")))
+  {:pre [(is (not (empty? args)) "Please provide configuration file name.")]}
+  (let [addresses    (:addresses (edn/read-string (slurp (first args))))
+        loop-backs   (:loop-back-configs (edn/read-string (slurp (first args))))
         ping-state   {:ping-state (check-addresses addresses)}]
 
     (if (some false? (vals (:ping-state ping-state)))
       ping-state
       {:report (merge ping-state {:loop-back-state (zipmap (keys loop-backs) (map loop-back-test (vals loop-backs)))})})))
 
+
+(-main "/data/fcs/projects/test-net-connection/resources/config.edn")
+(-main)
