@@ -32,28 +32,35 @@
                                         :height 12
                                         :fill (if k :green :red)
                                         }) (vals state)))
+(defn divider [text] [{:fx/type :label
+                       :text text
+                       :underline true}])
 
 (defn root-view [{:keys [ping-state loop-back-state config config-name]}]
   {:fx/type :stage
    :showing true
    :title "Net Connection Tool"
-   :width 800
-   :height 600
+   :width 900
+   :height 400
    :scene {:fx/type :scene
            :root {:fx/type :h-box
-                  :spacing 50
+                  :spacing 75
                   :padding 50
                   :children [{:fx/type :v-box
                               :spacing 10
+                              :padding 5
                               :children (concat
+                                         (divider "PING TESTS")
                                          (label-view ping-state)
+                                         (divider "LOOP-BACK TESTS")
                                          (label-view loop-back-state))
                               }
                              {:fx/type :v-box
                               :spacing 15
-                              :padding 5
                               :children (concat
+                                         (divider "\n")
                                          (value-view ping-state)
+                                         (divider "\n")
                                          (value-view loop-back-state))
                               }
                              {:fx/type :v-box
@@ -74,8 +81,7 @@
                                           :text "LOAD CONFIG FILE..."
                                           :on-action {::event ::open-file}
                                           }
-
-                                         {:fx/type :button
+                                        {:fx/type :button
                                           :text "RETRY"
                                           :on-action (fn [_]
                                                        (swap! *state merge (:report (r/generate-report config-name)))
@@ -86,7 +92,6 @@
                                           }
                                          ]
                               }
-
                              ]}}})
 
 (defn -main [& args]
@@ -98,6 +103,4 @@
                              (fx/wrap-effects {:report (fx/make-reset-effect *state)
                                                :dispatch fx/dispatch-effect}))})]
     (fx/mount-renderer *state renderer)))
-
-(-main)
 
