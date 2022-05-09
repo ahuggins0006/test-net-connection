@@ -1,0 +1,4 @@
+{;;:addresses ["clojure.org" "google.com" "huggins.com"]
+ :addresses ["10.10.1.40" "10.10.3.200" "10.10.3.201" "10.10.3.20" "10.10.3.50" "10.10.1.50"]
+ :loop-back-configs {:a  {:ip "localhost" :send-port 4760 :receive-port 4762 :data "hello clojure!\n"}
+                     :b  {:ip "localhost" :send-port 4762 :receive-port 4762 :data "hello clojure!\n"}}}

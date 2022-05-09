@@ -21,7 +21,7 @@
         chooser (doto (FileChooser.)
                   (.setTitle "Open File"))]
     (when-let [file (.showOpenDialog chooser window)]
-      (swap! *state merge (:report (r/generate-report file)))
+      (swap! *state merge (r/generate-report file))
       )))
 
 (defn label-view [state] (mapv (fn [k] {:fx/type :label
@@ -78,7 +78,7 @@
                                          {:fx/type :button
                                           :text "RETRY"
                                           :on-action (fn [_]
-                                                       (reset! *state (:report (r/generate-report config-name)))
+                                                       (swap! *state merge (:report (r/generate-report config-name)))
                                                        )}
                                          {:fx/type :button
                                           :text "EXIT"
@@ -94,8 +94,9 @@
                   :middleware (fx/wrap-map-desc #(root-view %))
                   :opts {:fx.opt/map-event-handler
                          (-> handle
-                             (fx/wrap-co-effects {:state (fx/make-deref-co-effect *state)})
-                             (fx/wrap-effects {:state (fx/make-reset-effect *state)
+                             (fx/wrap-co-effects {:report (fx/make-deref-co-effect *state)})
+                             (fx/wrap-effects {:report (fx/make-reset-effect *state)
                                                :dispatch fx/dispatch-effect}))})]
     (fx/mount-renderer *state renderer)))
+
 
