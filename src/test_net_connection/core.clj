@@ -99,4 +99,5 @@
                                                :dispatch fx/dispatch-effect}))})]
     (fx/mount-renderer *state renderer)))
 
+(-main)
 
